@@ -46,24 +46,31 @@ class UserController extends AbstractController
     {
         $user = $this->repository->find($id);
 
-        if (!$user) {
-            throw new \Exception('No user found for id ' . $id);
+        if ($user) {
+            return $this->json(
+                [
+                    'status' => 'success',
+                    'id' => $user->getId(),
+                    'firstName' => $user->getFirstName(),
+                    'lastName' => $user->getLastName(),
+                    'email' => $user->getEmail(),
+                    'password' => $user->getPassword(),
+                    'roles' => $user->getRoles(),
+                    'createdAt' => $user->getCreatedAt(),
+                    'updatedAt' => $user->getUpdatedAt(),
+                    Response::HTTP_OK,
+                ]
+            );
         }
 
         return $this->json(
             [
-                'status' => 'success',
-                'id' => $user->getId(),
-                'firstName' => $user->getFirstName(),
-                'lastName' => $user->getLastName(),
-                'email' => $user->getEmail(),
-                'password' => $user->getPassword(),
-                'roles' => $user->getRoles(),
-                'createdAt' => $user->getCreatedAt(),
-                'updatedAt' => $user->getUpdatedAt(),
-                Response::HTTP_OK,
+                'status' => 'error',
+                'message' => 'User not found!',
+                Response::HTTP_NOT_FOUND,
             ]
         );
+
     }
 
     #[Route('/{id}', methods: 'PUT', name: 'update')]
@@ -71,20 +78,27 @@ class UserController extends AbstractController
     {
         $user = $this->repository->find($id);
 
-        if (!$user) {
-            throw new \Exception('No user found for id ' . $id);
+        if ($user) {
+            $user->setFirstName('User');
+            $user->setLastName('Name');
+            $user->setEmail('user@name.fr');
+            $user->setPassword('password');
+            $user->setRoles(['ROLE_USER']);
+            $user->setUpdatedAt(new \DateTimeImmutable());
+
+            $this->manager->flush();
+
+            return $this->redirectToRoute('app_api_user_show', ['id' => $user->getId()]);
         }
 
-        $user->setFirstName('User');
-        $user->setLastName('Name');
-        $user->setEmail('user@name.fr');
-        $user->setPassword('password');
-        $user->setRoles(['ROLE_USER']);
-        $user->setUpdatedAt(new \DateTimeImmutable());
+        return $this->json(
+            [
+                'status' => 'error',
+                'message' => 'User not found!',
+                Response::HTTP_NOT_FOUND,
+            ]
+        );
 
-        $this->manager->flush();
-
-        return $this->redirectToRoute('app_api_user_show', ['id' => $user->getId()]);
     }
 
     #[Route('/{id}', methods: 'DELETE', name: 'delete')]
@@ -92,17 +106,23 @@ class UserController extends AbstractController
     {
         $user = $this->repository->find($id);
 
-        if (!$user) {
-            throw new \Exception('No user found for id ' . $id);
-        }
+        if ($user) {
+            $this->manager->remove($user);
+            $this->manager->flush();
 
-        $this->manager->remove($user);
-        $this->manager->flush();
+            return $this->json(
+                [
+                    'status' => 'User deleted!',
+                    Response::HTTP_OK,
+                ]
+            );
+        }
 
         return $this->json(
             [
-                'status' => 'User deleted!',
-                Response::HTTP_OK,
+                'status' => 'error',
+                'message' => 'User not found!',
+                Response::HTTP_NOT_FOUND,
             ]
         );
     }

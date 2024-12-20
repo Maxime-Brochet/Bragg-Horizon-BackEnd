@@ -41,17 +41,22 @@ class TagsController extends AbstractController
     {
         $tags = $this->repository->find($id);
 
-        if (!$tags) {
-            throw new \Exception('no tags found for id ' . $id);
+        if ($tags) {
+            return $this->json(
+                [
+                    'id' => $tags->getId(),
+                    'name' => $tags->getName(),
+                    'color' => $tags->getColor(),
+                    'icon' => $tags->getIcon(),
+                    Response::HTTP_OK,
+                ],
+            );
         }
 
         return $this->json(
             [
-                'id' => $tags->getId(),
-                'name' => $tags->getName(),
-                'color' => $tags->getColor(),
-                'icon' => $tags->getIcon(),
-                Response::HTTP_OK,
+                'status' => 'Tags not found!',
+                Response::HTTP_NOT_FOUND,
             ],
         );
     }
@@ -61,17 +66,22 @@ class TagsController extends AbstractController
     {
         $tags = $this->repository->find($id);
 
-        if (!$tags) {
-            throw new \Exception('no tags found for id ' . $id);
+        if ($tags) {
+            $tags->setName('Tags 1');
+            $tags->setColor('red');
+            $tags->setIcon('');
+
+            $this->manager->flush();
+
+            return $this->redirectToRoute('app_api_tags_show', ['id' => $tags->getId()]);
         }
 
-        $tags->setName('Tags 1');
-        $tags->setColor('red');
-        $tags->setIcon('');
-
-        $this->manager->flush();
-
-        return $this->redirectToRoute('app_api_tags_show', ['id' => $tags->getId()]);
+        return $this->json(
+            [
+                'status' => 'Tags not found!',
+                Response::HTTP_NOT_FOUND,
+            ],
+        );
     }
 
     #[Route('/{id}', methods: 'DELETE', name: 'delete')]
@@ -80,16 +90,21 @@ class TagsController extends AbstractController
         $tags = $this->repository->find($id);
 
         if (!$tags) {
-            throw new \Exception('no tags found for id ' . $id);
-        }
+            $this->manager->remove($tags);
+            $this->manager->flush();
 
-        $this->manager->remove($tags);
-        $this->manager->flush();
+            return $this->json(
+                [
+                    'status' => 'Tags deleted!',
+                    Response::HTTP_OK,
+                ],
+            );
+        }
 
         return $this->json(
             [
-                'status' => 'Tags deleted!',
-                Response::HTTP_OK,
+                'status' => 'Tags not found!',
+                Response::HTTP_NOT_FOUND,
             ],
         );
     }

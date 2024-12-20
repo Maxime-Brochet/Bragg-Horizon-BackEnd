@@ -45,20 +45,25 @@ class NewsController extends AbstractController
     {
         $news = $this->repository->find($id);
 
-        if (!$news) {
-            throw new \Exception('No news found for id ' . $id);
+        if ($news) {
+            return $this->json(
+                [
+                    'id' => $news->getId(),
+                    'name' => $news->getName(),
+                    'slug' => $news->getSlug(),
+                    'article' => $news->getArticle(),
+                    'createdAt' => $news->getCreatedAt(),
+                    'updatedAt' => $news->getUpdatedAt(),
+                    'owner' => $news->getOwner(),
+                    Response::HTTP_OK,
+                ],
+            );
         }
 
         return $this->json(
             [
-                'id' => $news->getId(),
-                'name' => $news->getName(),
-                'slug' => $news->getSlug(),
-                'article' => $news->getArticle(),
-                'createdAt' => $news->getCreatedAt(),
-                'updatedAt' => $news->getUpdatedAt(),
-                'owner' => $news->getOwner(),
-                Response::HTTP_OK,
+                'status' => 'News not found!',
+                Response::HTTP_NOT_FOUND,
             ],
         );
     }
@@ -68,18 +73,23 @@ class NewsController extends AbstractController
     {
         $news = $this->repository->find($id);
 
-        if (!$news) {
-            throw new \Exception('No news found for id ' . $id);
+        if ($news) {
+            $news->setName('name');
+            $news->setSlug('slug');
+            $news->setArticle(['article']);
+            $news->setUpdatedAt(new \DateTimeImmutable());
+
+            $this->manager->flush();
+
+            return $this->redirectToRoute('app_api_news_show', ['id' => $news->getId()]);
         }
 
-        $news->setName('name');
-        $news->setSlug('slug');
-        $news->setArticle(['article']);
-        $news->setUpdatedAt(new \DateTimeImmutable());
-
-        $this->manager->flush();
-
-        return $this->redirectToRoute('app_api_news_show', ['id' => $news->getId()]);
+        return $this->json(
+            [
+                'status' => 'News not found!',
+                Response::HTTP_NOT_FOUND,
+            ],
+        );
     }
 
     #[Route('/{id}', methods: 'DELETE', name: 'delete')]
@@ -87,18 +97,24 @@ class NewsController extends AbstractController
     {
         $news = $this->repository->find($id);
 
-        if (!$news) {
-            throw new \Exception('No news found for id ' . $id);
-        }
+        if ($news) {
+            $this->manager->remove($news);
+            $this->manager->flush();
 
-        $this->manager->remove($news);
-        $this->manager->flush();
+            return $this->json(
+                [
+                    'status' => 'News deleted!',
+                    Response::HTTP_OK,
+                ],
+            );
+        }
 
         return $this->json(
             [
-                'status' => 'News deleted!',
-                Response::HTTP_OK,
+                'status' => 'News not found!',
+                Response::HTTP_NOT_FOUND,
             ],
         );
+
     }
 }

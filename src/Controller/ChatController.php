@@ -44,18 +44,23 @@ class ChatController extends AbstractController
     {
         $chat = $this->repository->find($id);
 
-        if (!$chat) {
-            throw new \Exception('no chat found for id ' . $id);
+        if ($chat) {
+            return $this->json(
+                [
+                    'id' => $chat->getId(),
+                    'discussion' => $chat->getDiscussion(),
+                    'createdAt' => $chat->getCreatedAt(),
+                    'updatedAt' => $chat->getUpdatedAt(),
+                    'owner' => $chat->getOwner(),
+                    Response::HTTP_OK,
+                ],
+            );
         }
 
         return $this->json(
             [
-                'id' => $chat->getId(),
-                'discussion' => $chat->getDiscussion(),
-                'createdAt' => $chat->getCreatedAt(),
-                'updatedAt' => $chat->getUpdatedAt(),
-                'owner' => $chat->getOwner(),
-                Response::HTTP_OK,
+                'status' => 'Chat not found!',
+                Response::HTTP_NOT_FOUND,
             ],
         );
     }
@@ -65,16 +70,22 @@ class ChatController extends AbstractController
     {
         $chat = $this->repository->find($id);
 
-        if (!$chat) {
-            throw new \Exception('no chat found for id ' . $id);
+        if ($chat) {
+            $chat->setDiscussion(['discussion']);
+            $chat->setUpdatedAt(new \DateTimeImmutable());
+
+            $this->manager->flush();
+
+            return $this->redirectToRoute('app_api_chat_show', ['id' => $chat->getId()]);
         }
 
-        $chat->setDiscussion(['discussion']);
-        $chat->setUpdatedAt(new \DateTimeImmutable());
+        return $this->json(
+            [
+                'status' => 'Chat not found!',
+                Response::HTTP_NOT_FOUND,
+            ],
+        );
 
-        $this->manager->flush();
-
-        return $this->redirectToRoute('app_api_chat_show', ['id' => $chat->getId()]);
     }
 
     #[Route('/{id}', methods: 'DELETE', name: 'delete')]
@@ -82,17 +93,22 @@ class ChatController extends AbstractController
     {
         $chat = $this->repository->find($id);
 
-        if (!$chat) {
-            throw new \Exception('no chat found for id ' . $id);
-        }
+        if ($chat) {
+            $this->manager->remove($chat);
+            $this->manager->flush();
 
-        $this->manager->remove($chat);
-        $this->manager->flush();
+            return $this->json(
+                [
+                    'status' => 'Chat deleted!',
+                    Response::HTTP_OK,
+                ],
+            );
+        }
 
         return $this->json(
             [
-                'status' => 'Chat deleted!',
-                Response::HTTP_OK,
+                'status' => 'Chat not found!',
+                Response::HTTP_NOT_FOUND,
             ],
         );
     }
