@@ -15,19 +15,19 @@ class Tags
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 128, nullable: true)]
+    #[ORM\Column(length: 255)]
     private ?string $name = null;
 
-    #[ORM\Column(length: 16)]
+    #[ORM\Column(length: 255)]
     private ?string $color = null;
 
-    #[ORM\Column(length: 64, nullable: true)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $icon = null;
 
     /**
-     * @var Collection<int, News>
+     * @var Collection<int, news>
      */
-    #[ORM\ManyToMany(targetEntity: News::class, mappedBy: 'tags')]
+    #[ORM\ManyToMany(targetEntity: news::class, inversedBy: 'tags')]
     private Collection $news;
 
     public function __construct()
@@ -45,7 +45,7 @@ class Tags
         return $this->name;
     }
 
-    public function setName(?string $name): static
+    public function setName(string $name): static
     {
         $this->name = $name;
 
@@ -77,28 +77,25 @@ class Tags
     }
 
     /**
-     * @return Collection<int, News>
+     * @return Collection<int, news>
      */
     public function getNews(): Collection
     {
         return $this->news;
     }
 
-    public function addNews(News $news): static
+    public function addNews(news $news): static
     {
         if (!$this->news->contains($news)) {
             $this->news->add($news);
-            $news->addTag($this);
         }
 
         return $this;
     }
 
-    public function removeNews(News $news): static
+    public function removeNews(news $news): static
     {
-        if ($this->news->removeElement($news)) {
-            $news->removeTag($this);
-        }
+        $this->news->removeElement($news);
 
         return $this;
     }

@@ -13,68 +13,52 @@ class Chat
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column]
-    private array $discussion = [];
+    #[ORM\Column(nullable: true)]
+    private ?array $content = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
+    private ?\DateTimeImmutable $created_at = null;
 
     #[ORM\Column(nullable: true)]
-    private ?\DateTimeImmutable $updatedAt = null;
-
-    #[ORM\ManyToOne(inversedBy: 'chats')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?user $owner = null;
+    private ?\DateTimeImmutable $updated_at = null;
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getDiscussion(): array
+    public function getContent(): ?array
     {
-        return $this->discussion;
+        return $this->content;
     }
 
-    public function setDiscussion(array $discussion): static
+    public function setContent(?array $content): static
     {
-        $this->discussion = $discussion;
+        $this->content = $content;
 
         return $this;
     }
 
     public function getCreatedAt(): ?\DateTimeImmutable
     {
-        return $this->createdAt;
+        return $this->created_at;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    public function setCreatedAt(\DateTimeImmutable $created_at): static
     {
-        $this->createdAt = $createdAt;
+        $this->created_at = $created_at;
 
         return $this;
     }
 
     public function getUpdatedAt(): ?\DateTimeImmutable
     {
-        return $this->updatedAt;
+        return $this->updated_at;
     }
 
-    public function setUpdatedAt(?\DateTimeImmutable $updatedAt): static
+    public function setUpdatedAt(?\DateTimeImmutable $updated_at): static
     {
-        $this->updatedAt = $updatedAt;
-
-        return $this;
-    }
-
-    public function getOwner(): ?user
-    {
-        return $this->owner;
-    }
-
-    public function setOwner(?user $owner): static
-    {
-        $this->owner = $owner;
+        $this->updated_at = $updated_at;
 
         return $this;
     }

@@ -15,29 +15,25 @@ class News
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $name = null;
 
     #[ORM\Column(nullable: true)]
-    private ?array $article = null;
+    private ?array $content = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
+    private ?\DateTimeImmutable $created_at = null;
 
     #[ORM\Column(nullable: true)]
-    private ?\DateTimeImmutable $updatedAt = null;
+    private ?\DateTimeImmutable $updated_at = null;
 
     #[ORM\Column(length: 255)]
     private ?string $slug = null;
 
-    #[ORM\ManyToOne(inversedBy: 'news')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?User $owner = null;
-
     /**
-     * @var Collection<int, tags>
+     * @var Collection<int, Tags>
      */
-    #[ORM\ManyToMany(targetEntity: tags::class, inversedBy: 'news')]
+    #[ORM\ManyToMany(targetEntity: Tags::class, mappedBy: 'news')]
     private Collection $tags;
 
     public function __construct()
@@ -55,45 +51,45 @@ class News
         return $this->name;
     }
 
-    public function setName(string $name): static
+    public function setName(?string $name): static
     {
         $this->name = $name;
 
         return $this;
     }
 
-    public function getArticle(): ?array
+    public function getContent(): ?array
     {
-        return $this->article;
+        return $this->content;
     }
 
-    public function setArticle(?array $article): static
+    public function setContent(?array $content): static
     {
-        $this->article = $article;
+        $this->content = $content;
 
         return $this;
     }
 
     public function getCreatedAt(): ?\DateTimeImmutable
     {
-        return $this->createdAt;
+        return $this->created_at;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    public function setCreatedAt(\DateTimeImmutable $created_at): static
     {
-        $this->createdAt = $createdAt;
+        $this->created_at = $created_at;
 
         return $this;
     }
 
     public function getUpdatedAt(): ?\DateTimeImmutable
     {
-        return $this->updatedAt;
+        return $this->updated_at;
     }
 
-    public function setUpdatedAt(?\DateTimeImmutable $updatedAt): static
+    public function setUpdatedAt(?\DateTimeImmutable $updated_at): static
     {
-        $this->updatedAt = $updatedAt;
+        $this->updated_at = $updated_at;
 
         return $this;
     }
@@ -110,38 +106,29 @@ class News
         return $this;
     }
 
-    public function getOwner(): ?User
-    {
-        return $this->owner;
-    }
-
-    public function setOwner(?User $owner): static
-    {
-        $this->owner = $owner;
-
-        return $this;
-    }
-
     /**
-     * @return Collection<int, tags>
+     * @return Collection<int, Tags>
      */
     public function getTags(): Collection
     {
         return $this->tags;
     }
 
-    public function addTag(tags $tag): static
+    public function addTag(Tags $tag): static
     {
         if (!$this->tags->contains($tag)) {
             $this->tags->add($tag);
+            $tag->addNews($this);
         }
 
         return $this;
     }
 
-    public function removeTag(tags $tag): static
+    public function removeTag(Tags $tag): static
     {
-        $this->tags->removeElement($tag);
+        if ($this->tags->removeElement($tag)) {
+            $tag->removeNews($this);
+        }
 
         return $this;
     }
